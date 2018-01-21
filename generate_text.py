@@ -6,7 +6,7 @@ import markovify
 import util
 import posified_text
 
-model_json = util.read_json('model.json')
+model_json = util.read_json('models/model_2.json')
 
 reconstituted_model = posified_text.POSifiedText.from_json(model_json)
 

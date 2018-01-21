@@ -20,12 +20,22 @@ with open("/Users/filter/code/german-abbreviations/german_abbreviations.txt") as
 for a in list_of_abbr:
     a = a.strip()
     pattern.append(a)
+
+    # only do it abbr. that are short to not fuck it up with e.g. 'berlin.'
+    if len(a) < 6:
+        a_up = a[0].upper() + a[1:]
+        pattern.append(a_up)
     # for abbr. with a space, remove it also add it
     if " " in a:
         pattern.append(a.replace(" ", ""))
 
+        a = a.replace(" ", "")
+        a_up = a[0].upper() + a[1:]
+        pattern.append(a_up)
+
 # add new ones that were not coverd
-new = ["o.a.", "Ref.", "Nrn.", "no.", "I.", "II.", "III."]
+new = ["o.a.", "Ref.", "Nrn.", "no.", "I.",
+       "II.", "III.", "i.v.m.", "u.g.", "Rn.", "z.K.", "iSd.", "SVerf."]
 
 remove = ["an."]
 
@@ -45,7 +55,7 @@ def is_abbreviation(word):
 
 
 def is_ordinal(word):
-    return re.match("^(\d)+.$", word)
+    return re.match("^(\.?\d+)*.$", word)
 
 def is_sentence_ender(word):
     if word[-1] in ["?", "!"]:
@@ -59,7 +69,35 @@ def is_sentence_ender(word):
 
 # print(is_sentence_ender('erfragen.'))
 
+def find_greeting(sentence):
+    match = re.search(
+        '(Sehr geehrte.*,)|(Sehr geehrtAntragsteller/in)|Guten Tag Herr Antragsteller/in', sentence, re.IGNORECASE)
+    if match:
+        g = match.groups()
+        return match.start(), match.end()
+    return None, None
+
+
+def remove_greetings(s):
+    start_index, end_index = find_greeting(s)
+    if start_index is None:
+        return [s]
+    else:
+        first = s[:start_index].strip()
+        second = s[end_index:].strip()
+        second = second[0].upper() + second[1:]
+        return [*remove_greetings(first), *remove_greetings(second)]
+
 def split_into_sentences(text):
+    text = text.replace('„', '"').replace('“', '"').replace('"', '')
+    text = text.replace(' . ', '. ')
+
+    text = re.sub('\s+', ' ', text)  # subsitute multi whitespaces into 1
+
+    text = re.sub("(Mit freundlichen Grüßen|Mit freundlichem Gruß|Freundlicher Gruß|Freundliche Grüße|Viele Grüße|Mit freundlichen Grüssen),?",
+                  "", text, count=0, flags=re.IGNORECASE)
+
+
     potential_end_pat = re.compile(r"".join([
         r"([\w\.'’&\]\)]+[\.\?!])",  # A word that ends with punctuation
         r"([‘’“”'\"\)\]]*)",  # Followed by optional quote/parens/etc
@@ -72,16 +110,24 @@ def split_into_sentences(text):
                    if is_sentence_ender(x.group(1))]
     spans = zip([None] + end_indices, end_indices + [None])
     sentences = [text[start:end].strip() for start, end in spans]
-    return sentences
+
+    sentences = [s for s in sentences if 'Ursprüngliche Nachricht' not in s]
+
+    final_sentences = []
+
+    for s in sentences:
+        final_sentences.extend(remove_greetings(s))
+
+    return final_sentences
 
 
 class POSifiedText(markovify.Text):
-    def word_split(self, sentence):
-        return ["::".join((word.orth_, word.pos_)) for word in nlp(sentence)]
+    # def word_split(self, sentence):
+    #     return ["::".join((word.orth_, word.pos_)) for word in nlp(sentence)]
 
-    def word_join(self, words):
-        sentence = " ".join(word.split("::")[0] for word in words)
-        return sentence
+    # def word_join(self, words):
+    #     sentence = " ".join(word.split("::")[0] for word in words)
+    #     return sentence
 
     def test_sentence_input(self, sentence):
         return len(sentence) > 10
@@ -90,18 +136,26 @@ class POSifiedText(markovify.Text):
         """
         Splits full-text string into a list of sentences.
         """
-        text = text.replace('„', '"').replace('“', '"').replace('"', '')
-        text = text.replace(' . ', '. ')
 
-        text = re.sub('\s+', ' ', text) # subsitute multi whitespaces into 1
 
         # results = [sent.string.strip() for sent in nlp(text).sents]
         results = split_into_sentences(text)
-        print('\n'.join(results))
+
+        with open('sentences.txt', 'w') as file_handler:
+            for item in results:
+                file_handler.write("{}\n".format(item))
+
+
         return results
 
 
-# print(split_into_sentences("""Seit dem Jahr 2009 wird das zunächst europäische Projekt URA aus dem Jahr 2006 als national finanziertes Bund - Länder - Rückkehrprojekt URA 2 fortgesetzt.
-#             Im Rahmen dieses Projektes können freiwillige Rückkehrer und Rückgeführte aus den beteiligten Bundesländern Baden - Württemberg, Niedersachsen, Nordrhein - Westfalen und Sachsen - Anhalt sowie zueinem geringen Teil auch Einheimische eine Unterstützung erhalten.
-#             Weitere Informationen zu dem Projekt sowie der Flyer für das Projektjahr 2011 sind auf der Internetseite des Bundesamtes (www.bamf.de < http: // www.bamf.de > ) zu finden. zu d) Für die Zurückschiebung und die Durchführung der Abschiebung sind gemäß § 71 Abs. 4 und Abs. 5 Aufenthaltsgesetz die Ausländerbehörden, die mit der polizeilichen Kontrolle des grenzüberschreitenden Verkehrs beauftragten Behörden und, soweit erforderlich, die Polizei der Länder zuständig.
-#       Nähere Auskünfte sind bei den angegebenen Stellen zu erfragen. zu e) Im Rahmen der vom Bundesamt durchgeführten Reintegrationsmaßnahmen werden für Rückkehrer keine Häuser erworben oder gebaut."""))
+# def main():
+
+#     data = util.read_json('/Users/filter/code/fds-util/data/suc_msg.json')
+
+#     text = " ".join([d["content"] for d in data])
+#     POSifiedText(text, state_size=2)
+
+
+# if __name__ == '__main__':
+#     main()

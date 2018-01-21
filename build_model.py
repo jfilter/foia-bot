@@ -13,7 +13,7 @@ text = " ".join([d["content"] for d in data])
 
 # Build the model.
 
-state_size = 4
+state_size = 2
 
 text_model = posified_text.POSifiedText(text, state_size=state_size)
 
