@@ -4,11 +4,8 @@ import re
 import markovify
 import spacy
 
-ascii_lowercase = "abcdefghijklmnopqrstuvwxyz"
-ascii_uppercase = ascii_lowercase.upper()
 
 nlp = spacy.load("de_core_news_sm")
-
 
 pattern = []
 
@@ -57,6 +54,7 @@ def is_abbreviation(word):
 def is_ordinal(word):
     return re.match("^(\.?\d+)*.$", word)
 
+
 def is_sentence_ender(word):
     if word[-1] in ["?", "!"]:
         return True
@@ -67,7 +65,6 @@ def is_sentence_ender(word):
         return False
     return word[-1] == "." and not is_abbreviation(word)
 
-# print(is_sentence_ender('erfragen.'))
 
 def find_greeting(sentence):
     match = re.search(
@@ -88,6 +85,7 @@ def remove_greetings(s):
         second = second[0].upper() + second[1:]
         return [*remove_greetings(first), *remove_greetings(second)]
 
+
 def split_into_sentences(text):
     text = text.replace('„', '"').replace('“', '"').replace('"', '')
     text = text.replace(' . ', '. ')
@@ -96,7 +94,6 @@ def split_into_sentences(text):
 
     text = re.sub("(Mit freundlichen Grüßen|Mit freundlichem Gruß|Freundlicher Gruß|Freundliche Grüße|Viele Grüße|Mit freundlichen Grüssen),?",
                   "", text, count=0, flags=re.IGNORECASE)
-
 
     potential_end_pat = re.compile(r"".join([
         r"([\w\.'’&\]\)]+[\.\?!])",  # A word that ends with punctuation
@@ -137,7 +134,6 @@ class POSifiedText(markovify.Text):
         Splits full-text string into a list of sentences.
         """
 
-
         # results = [sent.string.strip() for sent in nlp(text).sents]
         results = split_into_sentences(text)
 
@@ -145,17 +141,4 @@ class POSifiedText(markovify.Text):
             for item in results:
                 file_handler.write("{}\n".format(item))
 
-
         return results
-
-
-# def main():
-
-#     data = util.read_json('/Users/filter/code/fds-util/data/suc_msg.json')
-
-#     text = " ".join([d["content"] for d in data])
-#     POSifiedText(text, state_size=2)
-
-
-# if __name__ == '__main__':
-#     main()

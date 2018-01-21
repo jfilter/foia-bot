@@ -1,4 +1,5 @@
 """generate some text"""
+
 import random
 
 import markovify
