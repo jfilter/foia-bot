@@ -1,0 +1,22 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[dev-packages]
+
+pylint = "*"
+"pep8" = "*"
+
+
+[packages]
+
+markovify = "*"
+spacy = "*"
+
+
+[requires]
+
+python_version = "3.6"
