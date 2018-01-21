@@ -5,7 +5,7 @@ addings POS to the text class
 import markovify
 # import spacy
 
-import sentence_boundary_detection
+from markov_chains import sentence_boundary_detection
 
 # nlp = spacy.load("de_core_news_sm")
 

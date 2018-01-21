@@ -102,3 +102,4 @@ ENV/
 .vscode
 models
 sentences
+config.py

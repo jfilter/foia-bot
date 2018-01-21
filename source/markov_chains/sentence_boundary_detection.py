@@ -35,7 +35,7 @@ def setup_pattern():
     new = ["o.a.", "Ref.", "Nrn.", "no.", "I.",
            "II.", "III.", "i.v.m.", "u.g.", "Rn.", "z.K.", "iSd.", "SVerf.", "BGBl.", "HmbGVBl.", "i.H.v.", "Buchst.", "NWVBI.",
            "udgl.", "evt.", "z. Zt.", "Tel.Nr.", "i.S.", "f.d.", "Bek.", "Dr.med.", "Fx.", "cc.", "gfls.", "BVerwG.", "zit.", "Rdnr.",
-           "GVBl."]
+           "GVBl.", "Anz."]
 
     remove = ["an."]
 
