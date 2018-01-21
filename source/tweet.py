@@ -6,7 +6,7 @@ import time
 
 import twitter
 
-from markov_chains.german_text import setup_model
+from markov_chains import german_text
 from config import config_no, config_yes
 
 MAX_TWEET_LENGTH = 280
@@ -21,7 +21,7 @@ class FoiaBot:
                                access_token_key=config["access_token"],
                                access_token_secret=config["access_token_secret"], sleep_on_rate_limit=True)
         self.screen_name = config["screen_name"]
-        self.model = setup_model(config["model_path"])
+        self.model = german_text.setup_model(config["model_path"])
 
     def get_favorites(self):
         favorites = self.api.GetFavorites(
@@ -105,10 +105,14 @@ def main():
     no_bot = FoiaBot(config_no)
     yes_bot = FoiaBot(config_yes)
 
-    while True:
-        no_bot.run()
-        yes_bot.run()
-        time.sleep(30)
+    no_bot.run()
+    yes_bot.run()
+
+
+def lambda_handler(event, context):
+    main()
 
 if __name__ == '__main__':
-    main()
+    while True:
+        main()
+        time.sleep(30)
