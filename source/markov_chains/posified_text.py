@@ -9,6 +9,7 @@ import sentence_boundary_detection
 
 # nlp = spacy.load("de_core_news_sm")
 
+
 class POSifiedText(markovify.Text):
     """
     overwrite orignal implementation which was focues on English
@@ -21,7 +22,7 @@ class POSifiedText(markovify.Text):
     #     return sentence
 
     def test_sentence_input(self, sentence):
-        return len(sentence) > 10
+        return len(sentence) > 7
 
     def sentence_split(self, text):
         """

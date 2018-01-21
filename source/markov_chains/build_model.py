@@ -5,8 +5,9 @@ build markov model from json file
 import util
 import posified_text
 
-CORPUS_PATH = "/Users/filter/code/fds-util/data/suc_msg.json"
-MODEL_BASE_PATH = "models/model"
+# CORPUS_PATH = "/Users/filter/code/fds-util/data/suc_msg.json"
+CORPUS_PATH = "/Users/filter/code/fds-util/data/failed_msg.json"
+MODEL_BASE_PATH = "models/model_failed_msg"
 
 
 def build_model(state_size=2):

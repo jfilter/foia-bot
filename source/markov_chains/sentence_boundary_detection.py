@@ -33,7 +33,9 @@ def setup_pattern():
 
     # add new ones that were not coverd
     new = ["o.a.", "Ref.", "Nrn.", "no.", "I.",
-           "II.", "III.", "i.v.m.", "u.g.", "Rn.", "z.K.", "iSd.", "SVerf."]
+           "II.", "III.", "i.v.m.", "u.g.", "Rn.", "z.K.", "iSd.", "SVerf.", "BGBl.", "HmbGVBl.", "i.H.v.", "Buchst.", "NWVBI.",
+           "udgl.", "evt.", "z. Zt.", "Tel.Nr.", "i.S.", "f.d.", "Bek.", "Dr.med.", "Fx.", "cc.", "gfls.", "BVerwG.", "zit.", "Rdnr.",
+           "GVBl."]
 
     remove = ["an."]
 
@@ -42,6 +44,10 @@ def setup_pattern():
     pattern.remove("an.")
 
     pattern = [p.replace('*', '\\*') for p in pattern]
+
+    pattern.append('(\w\.)*') # any initals or abbre like A.H.J., a.j.k.k.k ...
+
+    pattern.append('(\d)+ff\.') # like 55ff.
 
     return re.compile("^(" + "|".join(pattern) + ")$")
 
@@ -59,7 +65,7 @@ def is_ordinal(word):
     """
     checks if the word is an ordinal
     """
-    return re.match(r"^(\.?\d+)*.$", word)
+    return re.match(r"^(\.?\d+){0,2}.$", word) # check for ordinals, but not dates! Thus only 2 times.
 
 
 def is_sentence_ender(word, abbr_pattern):
@@ -73,7 +79,10 @@ def is_sentence_ender(word, abbr_pattern):
     # ignore words with only one char
     if len(word) < 3:
         return False
-    return word[-1] == "." and not is_abbreviation(word, abbr_pattern)
+    if word[-1] == "." and not is_abbreviation(word, abbr_pattern):
+        return not word.endswith('str.')
+    else:
+        return False
 
 
 def find_greeting(sentence):
@@ -81,7 +90,7 @@ def find_greeting(sentence):
     returns the start and end position of the greetings, if found. Otherwise, returns None.
     """
     match = re.search(
-        r'(Sehr geehrte.*,)|(Sehr geehrtAntragsteller/in)|Guten Tag Herr Antragsteller/in',
+        r'(Sehr geehrte.*,)|(Sehr geehrtAntragsteller/in,?)|Guten Tag Herr Antragsteller/in,?',
         sentence, re.IGNORECASE)
     if match:
         g = match.groups()
@@ -128,6 +137,8 @@ def clean_senteces(sentences):
     for sent in sentences:
         final_sentences.extend(remove_greetings(sent))
 
+    final_sentences = [sent for sent in final_sentences if len(sent) > 5]
+
     return final_sentences
 
 
@@ -141,7 +152,7 @@ def split_into_sentences(text):
 
     potential_end_pat = re.compile(r"".join([
         r"([\w\.'’&\]\)]+[\.\?!])",  # A word that ends with punctuation
-        r"([‘’“”'\"\)\]]*)",  # Followed by optional quote/parens/etc
+        # r"([‘’“”'\"\)\]]*)",  # Followed by optional quote/parens/etc
         r"(\s+)",  # Followed by whitespace
         # MODIFIED BY JFILTER, ALSO MATCHES WHEN THE NEXT SENT STARTS WITH LOWER CASE
     ]), re.U)

@@ -7,7 +7,9 @@ import random
 import util
 import posified_text
 
-MODEL_PATH = "models/model_2.json"
+# MODEL_PATH = "models/model_2.json"
+MODEL_PATH = "models/model_failed_msg_2.json"
+# MODEL_PATH = "models/model_failed_msg_pos_2.json"
 
 
 def generat_text():
