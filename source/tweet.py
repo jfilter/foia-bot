@@ -6,7 +6,7 @@ import time
 
 import twitter
 
-from markov_chains.generate_text import setup_model
+from markov_chains.german_text import setup_model
 from config import config_no, config_yes
 
 MAX_TWEET_LENGTH = 280
@@ -59,7 +59,6 @@ class FoiaBot:
 
         if success:
             self.api.CreateFavorite(status=status)
-
 
     def generate_sentence(self, max_length=150):
         return self.model.make_short_sentence(max_length, tries=100)
