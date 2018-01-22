@@ -48,15 +48,17 @@ class FoiaBot:
 
     def post_replies(self, status):
         tweets = self.create_tweets()
-        status_id = status.id
         print(tweets)
         success = True
+        reply_to_status_id = status.id
         for tweet in tweets:
-            response = self.api.PostUpdate(tweet, in_reply_to_status_id=status_id, auto_populate_reply_metadata=True,
+            response = self.api.PostUpdate(tweet, in_reply_to_status_id=reply_to_status_id, auto_populate_reply_metadata=True,
                                            exclude_reply_user_ids=False, trim_user=True, verify_status_length=False)
             if response is None:
                 success = False
                 break
+            else:
+                reply_to_status_id = response.id
 
         if success:
             self.api.CreateFavorite(status=status)
