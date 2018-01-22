@@ -3,6 +3,7 @@ tweet stuff in intervals
 """
 
 import time
+import datetime
 
 import twitter
 
@@ -23,6 +24,7 @@ class FoiaBot:
                                access_token_secret=config["access_token_secret"], sleep_on_rate_limit=True)
         self.screen_name = config["screen_name"]
         self.model = german_text.setup_model(config["model_path"])
+        self.hour_to_tweet = config["hour_to_tweet"]
 
     def get_favorites(self):
         favorites = self.api.GetFavorites(
@@ -63,8 +65,62 @@ class FoiaBot:
         if success:
             self.api.CreateFavorite(status=status)
 
-    def generate_sentence(self, max_length=150):
-        return self.model.make_short_sentence(max_length, tries=100)
+    def generate_sentence(self, tweet_text, chars_left, set_limit=False):
+        max_length = 150
+        if set_limit:
+            max_length = chars_left
+
+        new_sent = self.model.make_short_sentence(max_length, tries=100)
+        if new_sent is not None and len(new_sent) < chars_left:
+            tweet_text += ' ' + new_sent
+        return tweet_text
+
+    # https://stackoverflow.com/questions/7703865/going-from-twitter-date-to-python-datetime-date
+    def get_date_from_twitter_string(self, created_at):
+        x = time.strptime(created_at, '%a %b %d %H:%M:%S +0000 %Y')
+        return datetime.datetime.fromtimestamp(time.mktime(x))
+
+
+    def tweet_once_a_day(self):
+        now = datetime.datetime.now()
+        print(now.hour)
+        if now.hour == self.hour_to_tweet:
+            last_status_list = self.api.GetUserTimeline(screen_name=self.screen_name, count=1,
+                                     include_rts=False, trim_user=True, exclude_replies=True)
+            print(last_status_list)
+            if last_status_list is None:
+                return
+            if len(last_status_list) == 0:
+                self.post_single_tweet()
+            if len(last_status_list) == 1:
+                last_status = last_status_list[0]
+                created_at_date = self.get_date_from_twitter_string(last_status.created_at)
+
+                time_diff = now - created_at_date
+                print('time_diff', time_diff)
+                time_diff_hours = time_diff.seconds / 3600
+                print(time_diff_hours)
+                if time_diff_hours > 20: # something is broken with the date but whatever
+                    self.post_single_tweet()
+
+    def post_single_tweet(self):
+        tweet_text = self.generate_single_tweet_text()
+        response = self.api.PostUpdate(tweet_text, verify_status_length=False)
+
+    def generate_single_tweet_text(self):
+        tweet_text = ""
+        while True:
+            chars_left = MAX_TWEET_LENGTH - len(tweet_text)
+            chars_left -= 1 # for the space
+            if chars_left < 20:
+                break
+            if chars_left < 70:
+                tweet_text = self.generate_sentence(
+                    tweet_text, chars_left, True)
+            else:
+                tweet_text = self.generate_sentence(
+                    tweet_text, chars_left)
+        return tweet_text
 
     def create_tweets(self):
         tweets = []
@@ -88,13 +144,11 @@ class FoiaBot:
                         tweet_text += ending
                     break
                 if chars_left < 70:
-                    new_sent = self.generate_sentence(chars_left)
-                    if new_sent is not None and len(new_sent) < chars_left:
-                        tweet_text += ' ' + new_sent
+                    tweet_text = self.generate_sentence(tweet_text, chars_left, True)
                 else:
-                    new_sent = self.generate_sentence()
-                    if new_sent is not None and len(new_sent) < chars_left:
-                        tweet_text += ' ' + new_sent
+                    tweet_text = self.generate_sentence(
+                        tweet_text, chars_left)
+
 
             tweets.append(tweet_text)
 
@@ -115,6 +169,9 @@ def main():
     print('after running no bot')
     yes_bot.run()
     print('after running yes bot')
+    no_bot.tweet_once_a_day()
+    yes_bot.tweet_once_a_day()
+    print('after tweet once a day')
 
 
 def lambda_handler(event, context):
@@ -124,6 +181,4 @@ def lambda_handler(event, context):
 
 
 # if __name__ == '__main__':
-#     while True:
-#         main()
-#         time.sleep(30)
+#     main()
