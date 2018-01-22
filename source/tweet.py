@@ -14,6 +14,7 @@ greeting = ' Sehr geehrte/r Anstragssteller/in.'
 ending = ' MfG'
 num_tweets = 3
 
+
 class FoiaBot:
     def __init__(self, config):
         self.api = twitter.Api(consumer_key=config["consumer_key"],
@@ -52,7 +53,7 @@ class FoiaBot:
         success = True
         for tweet in tweets:
             response = self.api.PostUpdate(tweet, in_reply_to_status_id=status_id, auto_populate_reply_metadata=True,
-                exclude_reply_user_ids=False, trim_user=True, verify_status_length=False)
+                                           exclude_reply_user_ids=False, trim_user=True, verify_status_length=False)
             if response is None:
                 success = False
                 break
@@ -72,7 +73,8 @@ class FoiaBot:
                 tweet_text += greeting
 
             while True:
-                chars_left = MAX_TWEET_LENGTH - len(tweet_text) - 1 #because of space
+                chars_left = MAX_TWEET_LENGTH - \
+                    len(tweet_text) - 1  # because of space
 
                 # ensure space for the ending
                 if i + 1 == num_tweets:
@@ -96,23 +98,30 @@ class FoiaBot:
 
         return tweets
 
-
     def run(self):
         self.get_status_to_work_on()
 
 
 def main():
+    print('main called')
     no_bot = FoiaBot(config_no)
+    print('after setting up no bot')
     yes_bot = FoiaBot(config_yes)
+    print('after setting up yes bot')
 
     no_bot.run()
+    print('after running no bot')
     yes_bot.run()
+    print('after running yes bot')
 
 
 def lambda_handler(event, context):
+    print('handler called')
     main()
+    print('handler about to finish')
 
-if __name__ == '__main__':
-    while True:
-        main()
-        time.sleep(30)
+
+# if __name__ == '__main__':
+#     while True:
+#         main()
+#         time.sleep(30)
