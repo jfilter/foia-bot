@@ -98,7 +98,7 @@ class FoiaBot:
 
                 time_diff = now - created_at_date
                 print('time_diff', time_diff)
-                time_diff_hours = time_diff.seconds / 3600
+                time_diff_hours = time_diff.seconds / 3600 + time_diff.days * 24
                 print(time_diff_hours)
                 if time_diff_hours > 20: # something is broken with the date but whatever
                     self.post_single_tweet()
