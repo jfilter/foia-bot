@@ -7,4 +7,3 @@ MODEL_BASE_PATH_YES = "models/yes"
 
 # build_model.build_model(CORPUS_PATH, MODEL_BASE_PATH)
 german_text.build_model(CORPUS_PATH_YES, MODEL_BASE_PATH_YES)
-

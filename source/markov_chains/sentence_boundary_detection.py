@@ -45,9 +45,10 @@ def setup_pattern():
 
     pattern = [p.replace('*', '\\*') for p in pattern]
 
-    pattern.append('(\w\.)*') # any initals or abbre like A.H.J., a.j.k.k.k ...
+    # any initals or abbre like A.H.J., a.j.k.k.k ...
+    pattern.append('(\w\.)*')
 
-    pattern.append('(\d)+ff\.') # like 55ff.
+    pattern.append('(\d)+ff\.')  # like 55ff.
 
     return re.compile("^(" + "|".join(pattern) + ")$")
 
@@ -65,7 +66,7 @@ def is_ordinal(word):
     """
     checks if the word is an ordinal
     """
-    return re.match(r"^(\.?\d+){0,2}.$", word) # check for ordinals, but not dates! Thus only 2 times.
+    return re.match(r"^(\.?\d+){0,2}.$", word)  # check for ordinals, but not dates! Thus only 2 times.
 
 
 def is_sentence_ender(word, abbr_pattern):
@@ -108,7 +109,8 @@ def remove_greetings(sentence):
     else:
         first = sentence[:start_index].strip()
         second = sentence[end_index:].strip()
-        second = second[0].upper() + second[1:] # Ensures the senteces starts with an uppercase char
+        # Ensures the senteces starts with an uppercase char
+        second = second[0].upper() + second[1:]
         return [*remove_greetings(first), *remove_greetings(second)]
 
 

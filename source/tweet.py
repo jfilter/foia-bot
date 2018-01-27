@@ -80,13 +80,12 @@ class FoiaBot:
         x = time.strptime(created_at, '%a %b %d %H:%M:%S +0000 %Y')
         return datetime.datetime.fromtimestamp(time.mktime(x))
 
-
     def tweet_once_a_day(self):
         now = datetime.datetime.now()
         print(now.hour)
         if now.hour == self.hour_to_tweet:
             last_status_list = self.api.GetUserTimeline(screen_name=self.screen_name, count=1,
-                                     include_rts=False, trim_user=True, exclude_replies=True)
+                                                        include_rts=False, trim_user=True, exclude_replies=True)
             print(last_status_list)
             if last_status_list is None:
                 return
@@ -94,13 +93,14 @@ class FoiaBot:
                 self.post_single_tweet()
             if len(last_status_list) == 1:
                 last_status = last_status_list[0]
-                created_at_date = self.get_date_from_twitter_string(last_status.created_at)
+                created_at_date = self.get_date_from_twitter_string(
+                    last_status.created_at)
 
                 time_diff = now - created_at_date
                 print('time_diff', time_diff)
                 time_diff_hours = time_diff.seconds / 3600 + time_diff.days * 24
                 print(time_diff_hours)
-                if time_diff_hours > 20: # something is broken with the date but whatever
+                if time_diff_hours > 20:  # something is broken with the date but whatever
                     self.post_single_tweet()
 
     def post_single_tweet(self):
@@ -111,7 +111,7 @@ class FoiaBot:
         tweet_text = ""
         while True:
             chars_left = MAX_TWEET_LENGTH - len(tweet_text)
-            chars_left -= 1 # for the space
+            chars_left -= 1  # for the space
             if chars_left < 20:
                 break
             if chars_left < 70:
@@ -144,11 +144,11 @@ class FoiaBot:
                         tweet_text += ending
                     break
                 if chars_left < 70:
-                    tweet_text = self.generate_sentence(tweet_text, chars_left, True)
+                    tweet_text = self.generate_sentence(
+                        tweet_text, chars_left, True)
                 else:
                     tweet_text = self.generate_sentence(
                         tweet_text, chars_left)
-
 
             tweets.append(tweet_text)
 
